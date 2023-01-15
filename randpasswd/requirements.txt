@@ -1,0 +1,2 @@
+maskpass>=0.3.7
+cryptography>=39.0.0
