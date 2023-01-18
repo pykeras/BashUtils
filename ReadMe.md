@@ -21,7 +21,7 @@
     $ python3 genpass init
     ----OR---
     # to specify encryption key path
-    $ python genpass init -f ./Documents/passgen -i ./Desktop/secret.key
+    $ python genpass --init -f ./Documents/passgen -i ./Desktop/secret.key
     ```
 
     _The above command will generate an encrypted file in `Documents` with name of `passgen` and an encryption key in `Desktop` named `secret.key`._
@@ -52,8 +52,9 @@
       >
       > `-f (optional):` _Path and filename for encrypted file (default current directory/folder)_  
       > `-l (optional):` _length of new random password $8$ or higher (default: $8$)_  
-      > `-e (optional):` _if provided include password may include `+=-_,.|\/{}()[]<>` characters.\_
-      
+      > `-e (optional):` _if provided password may include `+=-_,.|\/{}()[]<>` characters._
+      >
+      > `-a (optional):` _list all names used for saved passwords._
 
 _`Test environment`: `OS Linux`, `Python 3.8.10`_
 
