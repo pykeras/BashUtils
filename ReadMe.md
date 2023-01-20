@@ -53,7 +53,7 @@
       > `-i (optional):` _Path and filename for encrypted file (default current directory/folder)_  
       > `-l (optional):` _length of new random password $12$ or higher (default: $12$)_  
       >
-      > `-f (optional)`: _Provide a name to get it's password_
+      > `-f (optional)`: _Find password for provided name_
       >
       > `-e (optional):` _if provided password may include `+=-_,.|\/{}()[]<>` characters._
       >
