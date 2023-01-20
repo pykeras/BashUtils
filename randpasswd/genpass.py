@@ -165,15 +165,27 @@ if __name__ == "__main__":
         help="if provided password may include +=-_,.|\/{}()[]<> characters.",
     )
     args = parser.parse_args()
+    print(args)
     passgen = PassGen()
+
     try:
         if args.init:
-            passgen.init_only(args.i, args.f)
+            passgen.init_only(args.k, args.i)
+            if args.n is None:
+                sys.exit("\033[34mKey and encryption files created.\033[0m")
+            elif args.l < 12:
+                raise ValueError("Password length cannot be less than 12 characters")
+            raw_pass = passgen.write_password(args.k, args.i, args.n, args.l, args.e)
+            print(f"\n\033[1mYour password is: \033[32m{raw_pass}\033[0m")
+        if args.l < 12:
+            raise ValueError("Password length cannot be less than 12 characters")
         if args.n is None:
-            sys.exit("Key and encryption files created.")
-        elif args.l < 12:
-            sys.exit("Password length cannot be less than 8 characters", -1)
-        raw_pass = passgen.write_password(args.i, args.f, args.n, args.l, args.e)
+            raw_pass = passgen.random_password(args.l, args.e)
+            print(
+                f"\n\033[1;33mOne time password (no saving): \033[32m{raw_pass}\033[0m"
+            )
+        raw_pass = passgen.write_password(args.k, args.i, args.n, args.l, args.e)
         print(f"\n\033[1mYour password is: \033[32m{raw_pass}\033[0m")
+
     except Exception as e:
         print(f"\n\033[31m{e}\033[0m")
