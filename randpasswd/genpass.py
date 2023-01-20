@@ -49,7 +49,7 @@ class PassGen:
             with open(fpath, "r") as f:
                 return json.load(f)
         except:
-            sys.exit("\n\033[31mFile {fpath} does not exists or is wrong\033[0m")
+            sys.exit(f"\n\033[31mFile {fpath} does not exists or is wrong\033[0m")
 
     def write_file(self, fpath, data):
         try:
@@ -74,6 +74,13 @@ class PassGen:
     def init_only(self, kpath, fpath):
         self.generate_key(kpath)
         self.write_file(fpath, {})
+
+    def find_password(self, name, kpath, fpath):
+        fernet = self.load_key(kpath)
+        pwdict = self.load_file(fpath)
+        if passwd := pwdict.get(name, None):
+            return fernet.decrypt(bytes(passwd, "utf-8"))
+        return passwd
 
     def write_password(self, kpath, fpath, name, plen, ext):
         try:
@@ -124,6 +131,35 @@ class PassGen:
 # # hash file to save password not password them self (or maybe both)
 # # using a key file instead of password
 
+
+def main(args):
+    # create new secret and .enc
+    if args.init:
+        passgen.init_only(args.k, args.i)
+        if args.n is None:
+            return "\033[34mKey and encryption files created.\033[0m"
+        # # generate and save password after file creatation
+        elif args.l < 12:
+            raise ValueError("Password length cannot be less than 12 characters")
+        raw_pass = passgen.write_password(args.k, args.i, args.n, args.l, args.e)
+        return f"\n\033[1mYour password is: \033[32m{raw_pass}\033[0m"
+    # Find password for given name
+    if args.f:
+        raw_pass = passgen.find_password(args.f, args.k, args.i)
+        if raw_pass:
+            return f"\n\033[1mYour password is: \033[32m{raw_pass}\033[0m"
+        return f"\n\033[33mNo saved password for {args.f}\033[0m"
+    if args.l < 12:
+        raise ValueError("Password length cannot be less than 12 characters")
+    # create one time password
+    if args.n is None:
+        raw_pass = passgen.random_password(args.l, args.e)
+        return f"\n\033[1;33mOne time password (no saving): \033[32m{raw_pass}\033[0m"
+    # generate and save password
+    raw_pass = passgen.write_password(args.k, args.i, args.n, args.l, args.e)
+    return f"\n\033[1mYour password is: \033[32m{raw_pass}\033[0m"
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Random Password Generator")
     parser.add_argument(
@@ -137,16 +173,21 @@ if __name__ == "__main__":
         help="A name for new password, will help you remember and retrieve password easier.",
     )
     parser.add_argument(
+        "-f",
+        required=False,
+        help="Find password for provided name",
+    )
+    parser.add_argument(
         "-a", required=False, help="List all names used to retrieve passwords"
     )
     parser.add_argument(
-        "-i",
+        "-k",
         required=False,
         default=os.path.join(os.getcwd(), "secret.key"),
         help="Path to the key (include it's name). default current dir",
     )
     parser.add_argument(
-        "-f",
+        "-i",
         required=False,
         default=os.path.join(os.getcwd(), "passgen.enc"),
         help="Path to the encrypted file (include it's name). default current dir",
@@ -156,36 +197,19 @@ if __name__ == "__main__":
         required=False,
         type=int,
         default=12,
-        help="length of new random password 8 or higher (default:8)",
+        help="Length of new random password 8 or higher (default:8)",
     )
     parser.add_argument(
         "-e",
         required=False,
         action="store_true",
-        help="if provided password may include +=-_,.|\/{}()[]<> characters.",
+        help="If provided password may include +=-_,.|\/{}()[]<> characters.",
     )
     args = parser.parse_args()
-    print(args)
     passgen = PassGen()
 
     try:
-        if args.init:
-            passgen.init_only(args.k, args.i)
-            if args.n is None:
-                sys.exit("\033[34mKey and encryption files created.\033[0m")
-            elif args.l < 12:
-                raise ValueError("Password length cannot be less than 12 characters")
-            raw_pass = passgen.write_password(args.k, args.i, args.n, args.l, args.e)
-            print(f"\n\033[1mYour password is: \033[32m{raw_pass}\033[0m")
-        if args.l < 12:
-            raise ValueError("Password length cannot be less than 12 characters")
-        if args.n is None:
-            raw_pass = passgen.random_password(args.l, args.e)
-            print(
-                f"\n\033[1;33mOne time password (no saving): \033[32m{raw_pass}\033[0m"
-            )
-        raw_pass = passgen.write_password(args.k, args.i, args.n, args.l, args.e)
-        print(f"\n\033[1mYour password is: \033[32m{raw_pass}\033[0m")
+        print(main(args))
 
     except Exception as e:
         print(f"\n\033[31m{e}\033[0m")
