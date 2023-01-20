@@ -1,30 +1,23 @@
-# TODO: raise custom exceptions
-
 #!/usr/bin/env python3
-import os, argparse, random, string, json, sys
-
-# import maskpass
+import os, argparse, random, string, json
 from cryptography.fernet import Fernet
 
 
 class PassGen:
+    def init_files(self, kpath, fpath):
+        self.generate_key(kpath)
+        self.write_file(fpath, {})
 
-    # def __init__(self):
-
-    def random_password(self, plen, ext):
+    def random_password(self, plen=12, ext=False):
         base = string.ascii_letters + """1234567890"""
         special = """!@#$%^&*?~`'":;"""
-        extend = """+=-_,.|\\}{)(][/><"""
+        extend = r"+=-_,.|\}{)(][/><"
         special_chr = random.choice(special)
         passwd = "".join(random.choices(base, k=plen - 1))
         if ext:
             passwd = "".join(random.choices(base + extend, k=plen - 1))
             return passwd + special_chr
         return passwd + special_chr
-
-        if ext:
-            return "".join(random.choices(base + extend, k=plen))
-        return "".join(random.choices(base, k=plen))
 
     def generate_key(self, path):
         if os.path.exists(path):
@@ -37,75 +30,54 @@ class PassGen:
         return Fernet(key)
 
     def load_key(self, path):
-        try:
-            with open(path, "rb") as f:
-                k = f.read()
-            return Fernet(k)
-        except:
-            quit("\n\033[31mCan not read secret.key\033[0m")
+        with open(path, "rb") as f:
+            k = f.read()
+        return Fernet(k)
 
     def load_file(self, fpath):
-        try:
-            with open(fpath, "r") as f:
-                return json.load(f)
-        except:
-            sys.exit(f"\n\033[31mFile {fpath} does not exists or is wrong\033[0m")
+        with open(fpath, "r") as f:
+            return json.load(f)
 
     def write_file(self, fpath, data):
-        try:
-            with open(fpath, "w") as f:
-                json.dump(data, f)
-        except:
-            sys.exit(
-                "\n\033[31mSomething goes wrong trying to save to file (Check directory permissions)\033[0m"
-            )
+        with open(fpath, "w") as f:
+            json.dump(data, f)
 
     def read_password(self, kpath, fpath, name):
-        try:
-            fernet = self.load_key(kpath)
-            pwdict = self.load_file(fpath)
-            if name in pwdict:
-                found_pass = fernet.decrypt(bytes(pwdict[name], "utf-8"))
-                return str(found_pass, encoding="utf-8")
-            return "No result for {name}"
-        except:
-            sys.exit("\n\033[31mSomething goes wrong, cannot retrieve password.\033[0m")
+        fernet = self.load_key(kpath)
+        pwdict = self.load_file(fpath)
+        if name in pwdict:
+            found_pass = fernet.decrypt(bytes(pwdict[name], "utf-8"))
+            return str(found_pass, encoding="utf-8")
+        return "No result for {name}"
 
-    def init_only(self, kpath, fpath):
-        self.generate_key(kpath)
-        self.write_file(fpath, {})
-
-    def write_password(self, kpath, fpath, name, plen, ext):
-        try:
-            raw_pass = self.random_password(plen, ext)
-            if not name:
-                return raw_pass
-            fernet = self.load_key(kpath)
-            pw = str(fernet.encrypt(raw_pass.encode("utf-8")), encoding="utf-8")
-            pwdict = self.load_file(fpath)
-            if name not in pwdict:
-                pwdict[name] = pw
-                self.write_file(fpath, pwdict)
-                return raw_pass
-            else:
-                while True:
-                    act = input(
-                        "Name already exists do you wan't to overwrite it? (Y/N)"
-                    )
-                    if act == "Y":
-                        pwdict[name] = pw
-                        self.write_file(fpath, pwdict)
-                        return raw_pass
-                    elif act == "N":
-                        return "Stopped by user request."
-        except:
-            sys.exit("\n\033[31mSomething goes wrong in password generation\033[0m")
+    def write_password(self, kpath, fpath, name, plen=12, ext=False):
+        raw_pass = self.random_password(plen, ext)
+        if not name:
+            return raw_pass
+        fernet = self.load_key(kpath)
+        pw = str(fernet.encrypt(raw_pass.encode("utf-8")), encoding="utf-8")
+        pwdict = self.load_file(fpath)
+        if name not in pwdict:
+            pwdict[name] = pw
+            self.write_file(fpath, pwdict)
+            return raw_pass
+        else:
+            while True:
+                act = input(
+                    "\033[1mName already exists do you wan't to overwrite it? (Y/N)\033[0m"
+                )
+                if act == "Y":
+                    pwdict[name] = pw
+                    self.write_file(fpath, pwdict)
+                    return raw_pass
+                elif act == "N":
+                    return "Stopped by user request."
 
     def find_password(self, name, kpath, fpath):
         fernet = self.load_key(kpath)
         pwdict = self.load_file(fpath)
         if passwd := pwdict.get(name, None):
-            return fernet.decrypt(bytes(passwd, "utf-8"))
+            return str(fernet.decrypt(bytes(passwd, "utf-8")), encoding='utf-8')
         return passwd
 
     def get_all_names(self, fpath):
@@ -123,7 +95,7 @@ class PassGen:
 def main(args):
     # create new secret and .enc
     if args.init:
-        passgen.init_only(args.k, args.i)
+        passgen.init_files(args.k, args.i)
         if args.n is None:
             return "\033[34mKey and encryption files created.\033[0m"
         # # generate and save password after file creatation
@@ -151,7 +123,7 @@ def main(args):
     return f"\n\033[1mYour password is: \033[32m{raw_pass}\033[0m"
 
 
-if __name__ == "__main__":
+def parse_args():
     parser = argparse.ArgumentParser(description="Random Password Generator")
     parser.add_argument(
         "--init",
@@ -199,10 +171,13 @@ if __name__ == "__main__":
         action="store_true",
         help="If provided password may include +=-_,.|\/{}()[]<> characters.",
     )
-    args = parser.parse_args()
-    passgen = PassGen()
+    return parser.parse_args()
 
+
+if __name__ == "__main__":
     try:
+        passgen = PassGen()
+        args = parse_args()
         print(main(args))
 
     except Exception as e:

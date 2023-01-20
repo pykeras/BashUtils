@@ -1,4 +1,9 @@
 .venv
-tests.py
+test_genpass.py
 passgen.enc
 secret.key
+__pycache__
+.coverage
+.pytest_cache
+htmlcov
+todo.md
