@@ -1,5 +1,7 @@
+# TODO: raise custom exceptions
+
 #!/usr/bin/env python3
-import os, argparse, random, string, json
+import os, argparse, random, string, json, sys
 
 # import maskpass
 from cryptography.fernet import Fernet
@@ -10,20 +12,29 @@ class PassGen:
     # def __init__(self):
 
     def random_password(self, plen, ext):
-        base = string.ascii_letters + """1234567890!@#$%^&*?~`'":;"""
+        base = string.ascii_letters + """1234567890"""
+        special = """!@#$%^&*?~`'":;"""
         extend = """+=-_,.|\\}{)(][/><"""
+        special_chr = random.choice(special)
+        passwd = "".join(random.choices(base, k=plen - 1))
+        if ext:
+            passwd = "".join(random.choices(base + extend, k=plen - 1))
+            return passwd + special_chr
+        return passwd + special_chr
+
         if ext:
             return "".join(random.choices(base + extend, k=plen))
         return "".join(random.choices(base, k=plen))
 
     def generate_key(self, path):
-        try:
-            key = Fernet.generate_key()
-            with open(path, "wb") as f:
-                f.write(key)
-            return Fernet(key)
-        except:
-            print("Can not save secret.key")
+        if os.path.exists(path):
+            raise ValueError(
+                f"File already exists {path!r} \033[33mconsider removing --init\033[0m"
+            )
+        key = Fernet.generate_key()
+        with open(path, "wb") as f:
+            f.write(key)
+        return Fernet(key)
 
     def load_key(self, path):
         try:
@@ -31,22 +42,22 @@ class PassGen:
                 k = f.read()
             return Fernet(k)
         except:
-            print("Can not read secret.key")
+            quit("\n\033[31mCan not read secret.key\033[0m")
 
     def load_file(self, fpath):
         try:
             with open(fpath, "r") as f:
                 return json.load(f)
         except:
-            print("File {fpath} does not exists or is wrong")
+            sys.exit("\n\033[31mFile {fpath} does not exists or is wrong\033[0m")
 
     def write_file(self, fpath, data):
         try:
             with open(fpath, "w") as f:
                 json.dump(data, f)
         except:
-            print(
-                "Something goes wrong trying to save to file (Check directory permissions)"
+            sys.exit(
+                "\n\033[31mSomething goes wrong trying to save to file (Check directory permissions)\033[0m"
             )
 
     def read_password(self, kpath, fpath, name):
@@ -58,7 +69,7 @@ class PassGen:
                 return str(found_pass, encoding="utf-8")
             return "No result for {name}"
         except:
-            print("Something goes wrong, cannot retrieve password.")
+            sys.exit("\n\033[31mSomething goes wrong, cannot retrieve password.\033[0m")
 
     def init_only(self, kpath, fpath):
         self.generate_key(kpath)
@@ -88,7 +99,7 @@ class PassGen:
                     elif act == "N":
                         return "Stopped by user request."
         except:
-            print("Something goes wrong in password generation")
+            sys.exit("\n\033[31mSomething goes wrong in password generation\033[0m")
 
         # if is_init:
         #     fernet = self.generate_key(kpath)
@@ -123,7 +134,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "-n",
         type=str,
-        help="A name for new password, will help you remember and retrive password easier.",
+        help="A name for new password, will help you remember and retrieve password easier.",
+    )
+    parser.add_argument(
+        "-a", required=False, help="List all names used to retrieve passwords"
     )
     parser.add_argument(
         "-i",
@@ -141,7 +155,7 @@ if __name__ == "__main__":
         "-l",
         required=False,
         type=int,
-        default=8,
+        default=12,
         help="length of new random password 8 or higher (default:8)",
     )
     parser.add_argument(
@@ -151,4 +165,15 @@ if __name__ == "__main__":
         help="if provided password may include +=-_,.|\/{}()[]<> characters.",
     )
     args = parser.parse_args()
-    print(args)
+    passgen = PassGen()
+    try:
+        if args.init:
+            passgen.init_only(args.i, args.f)
+        if args.n is None:
+            sys.exit("Key and encryption files created.")
+        elif args.l < 12:
+            sys.exit("Password length cannot be less than 8 characters", -1)
+        raw_pass = passgen.write_password(args.i, args.f, args.n, args.l, args.e)
+        print(f"\n\033[1mYour password is: \033[32m{raw_pass}\033[0m")
+    except Exception as e:
+        print(f"\n\033[31m{e}\033[0m")

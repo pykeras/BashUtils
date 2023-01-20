@@ -1,2 +1,4 @@
 .venv
 tests.py
+passgen.enc
+secret.key
