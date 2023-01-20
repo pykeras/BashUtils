@@ -37,21 +37,24 @@
       $ python3 genpass.py -n "myEmail" 
       ---- OR ----
       # generate new password
-      $ python3 genpass.py -i ./secret.key -f ./Document/passgen -n "myEmail" -l 20
+      $ python3 genpass.py -k ./secret.key -f ./Document/passgen -n "myEmail" -l 20
       ---- OR ----
       # list all saved passwords
-      $ python3 genpass.py -i ./secret.key --list
+      $ python3 genpass.py -k ./secret.key --list
       ---- OR ----
       # show password for specific name
-      $ python genpass.py -i ./secret.key --find "myEmail"
+      $ python genpass.py -k ./secret.key -f "myEmail"
       ```
       
       > `-n:` _A name for new password for easier retrieve or remember_  
       >
-      > `-i (optional):` _Path and filename to key, __auto created in first use__ (default current directory/folder)._
+      > `-k (optional):` _Path and filename to key, __auto created in first use__ (default current directory/folder)._
       >
-      > `-f (optional):` _Path and filename for encrypted file (default current directory/folder)_  
-      > `-l (optional):` _length of new random password $8$ or higher (default: $8$)_  
+      > `-i (optional):` _Path and filename for encrypted file (default current directory/folder)_  
+      > `-l (optional):` _length of new random password $12$ or higher (default: $12$)_  
+      >
+      > `-f (optional)`: _Provide a name to get it's password_
+      >
       > `-e (optional):` _if provided password may include `+=-_,.|\/{}()[]<>` characters._
       >
       > `-a (optional):` _list all names used for saved passwords._
