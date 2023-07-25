@@ -87,4 +87,6 @@ _Can be used as a tutorial for `asyncio, aiohttp, aiofiles`_
 
   > _$128$ is the music file quality (by default set to $320$)_
 
+_`Test environment`: `OS Linux`, `Python 3.10.12`_
+
 </details>
