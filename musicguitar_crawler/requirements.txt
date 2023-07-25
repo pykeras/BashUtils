@@ -1,0 +1,4 @@
+# use python 3.10
+aiohttp[speedups] ~= 3.8.5
+aiofiles~=23.1.0
+beautifulsoup4 ~= 4.12.2
