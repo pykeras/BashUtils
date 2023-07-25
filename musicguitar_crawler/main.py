@@ -66,9 +66,15 @@ async def main(quality):
                     meta.split("/")[-1]
                     .split(".")[0]
                     .lower()
+                    .split("-songs-coll")[0]
                     .split("-songs-colletion")[0]
+                    .split("-songs-collection")[0]
+                    .split("-song-collection")[0]
+                    .split("-song-colletion")[0]
+                    .split("-music-colletion")[0]
                     .split("-music-collection")[0]
                     .split("-best-music")[0]
+                    .split("-best-songs")[0]
                     .replace("-", " ")
                     .title()
                     .replace(" ", "_")
