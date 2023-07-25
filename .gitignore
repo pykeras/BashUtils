@@ -7,3 +7,7 @@ __pycache__
 .pytest_cache
 htmlcov
 todo.md
+*.prof
+musics
+best_of_*.json
+*.ipynb
