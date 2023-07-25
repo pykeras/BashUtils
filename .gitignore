@@ -8,3 +8,6 @@ __pycache__
 htmlcov
 todo.md
 *.prof
+musics
+best_of_*.json
+*.ipynb
