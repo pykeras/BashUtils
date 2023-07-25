@@ -15,6 +15,33 @@ class Colors:
     END = "\033[0m"
 
 
+def clean_filename(filename):
+    return (
+        filename.replace("%20", "_")
+        .replace("%5B", "")
+        .replace("%5D", "")
+        .replace("_-_", "-")
+        .replace("_[320]", "_320")
+    )
+
+
+def extract_artist_name(meta):
+    artist_name = meta.split("/")[-1].split(".")[0].lower()
+    for suffix in [
+        "-songs-coll",
+        "-songs-colletion",
+        "-songs-collection",
+        "-song-collection",
+        "-song-colletion",
+        "-music-colletion",
+        "-music-collection",
+        "-best-music",
+        "-best-songs",
+    ]:
+        artist_name = artist_name.split(suffix)[0]
+    return artist_name.replace("-", " ").title().replace(" ", "_")
+
+
 async def fetch_main_page(session: ClientSession, url: str):
     async with session.get(url) as response:
         assert response.status == 200
@@ -24,14 +51,7 @@ async def fetch_main_page(session: ClientSession, url: str):
 async def fetch_music(session: ClientSession, artist_dir: str, url: str):
     async with session.get(url) as response:
         assert response.status == 200
-        fname = (
-            url.split("/")[-1]
-            .replace("%20", "_")
-            .replace("%5B", "")
-            .replace("%5D", "")
-            .replace("_-_", "-")
-            .replace("_[320]", "_320")
-        )
+        fname = clean_filename(url.split("/")[-1])
         file_path = os.path.join(artist_dir, fname)
         async with aopen(file_path, "wb") as f:
             await f.write(await response.read())
@@ -49,11 +69,6 @@ async def main(quality):
         sys.exit(1)
 
     best_of_json = defaultdict(list)
-    # {
-    #     "artist_name": "dariush_eghbali",
-    #     "dariush_eghbali_320": [],
-    #     "dariush_eghbali_320": [],
-    # }
     async with aiohttp.ClientSession() as session:
         print(f"{Colors.OKGREEN}start sending requests ...{Colors.END}\n")
         all_requests = [fetch_main_page(session, url) for url in urls]
@@ -62,23 +77,7 @@ async def main(quality):
             try:
                 content = BeautifulSoup(content, "html.parser")
                 meta = content.select_one("meta[property='og:image']")["content"]
-                artist_name = (
-                    meta.split("/")[-1]
-                    .split(".")[0]
-                    .lower()
-                    .split("-songs-coll")[0]
-                    .split("-songs-colletion")[0]
-                    .split("-songs-collection")[0]
-                    .split("-song-collection")[0]
-                    .split("-song-colletion")[0]
-                    .split("-music-colletion")[0]
-                    .split("-music-collection")[0]
-                    .split("-best-music")[0]
-                    .split("-best-songs")[0]
-                    .replace("-", " ")
-                    .title()
-                    .replace(" ", "_")
-                )
+                artist_name = extract_artist_name(meta)
                 print(
                     f"{Colors.WARNING}start sending requests for {artist_name} urls ...{Colors.END}"
                 )
