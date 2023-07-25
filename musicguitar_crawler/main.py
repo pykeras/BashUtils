@@ -73,6 +73,9 @@ async def main(quality):
                     .title()
                     .replace(" ", "_")
                 )
+                print(
+                    f"{Colors.WARNING}start sending requests for {artist_name} urls ...{Colors.END}"
+                )
                 match quality:
                     case "320":
                         tracks_urls = [
