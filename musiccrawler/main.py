@@ -98,7 +98,7 @@ async def main(quality):
                     fetch_music(session, artist_dir, url) for url in tracks_urls
                 ]
                 try:
-                    await asyncio.gather(*all_musics, return_exceptions=True)
+                    await asyncio.gather(*all_musics)
                 except Exception as ex:
                     print(ex)
 
