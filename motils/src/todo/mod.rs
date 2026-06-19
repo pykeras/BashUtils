@@ -264,6 +264,7 @@ pub fn print_list_tasks(tpath: &Path, dpath: &Path, done: bool) -> Result<()> {
         let file = fs::OpenOptions::new()
             .create(true)
             .truncate(false)
+            .write(true)
             .read(true)
             .open(dpath)
             .context("can't read done tasks file")?;
@@ -408,5 +409,28 @@ mod tests {
         let todos = read_todos(&tpath).unwrap();
         assert_eq!(todos.len(), 1);
         assert_eq!(todos[0].description, "Task to lose");
+    }
+
+    #[test]
+    fn test_list_done_tasks_when_file_missing() {
+        let (_dir, tpath, dpath) = setup();
+
+        assert!(
+            !dpath.exists(),
+            "Setup error: done file shouldn't exist yet"
+        );
+
+        let result = print_list_tasks(&tpath, &dpath, true);
+
+        assert!(
+            result.is_ok(),
+            "Failed to list done tasks when file is missing: {:?}",
+            result.err()
+        );
+
+        assert!(
+            dpath.exists(),
+            "The done file should have been created automatically by OpenOptions"
+        );
     }
 }
