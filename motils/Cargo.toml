@@ -7,8 +7,7 @@ license = "MIT"
 repository = "https://github.com/pykeras/BashUtils/tree/motils/motils"
 readme = "README.md"
 keywords = ["cli", "terminal", "todo", "linux", "system"]
-categories = ["Command line utilities"]
-
+categories = ["command-line-utilities"]
 
 default-run = "greet"
 
