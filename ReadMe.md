@@ -107,10 +107,10 @@ _`Test environment`: `OS Linux`, `Python 3.10.12`_
 - _add a new task:_
 
 ```
-$ todo add "Write documentation"
+$ todo add Write documentation
   ----OR----
 # with priority
-$ todo add -p high "Fix critical bug"
+$ todo add -p high Fix critical bug
   ----OR----
 # with trailing arguments
 $ todo add -p medium Fix -- this bug now
@@ -248,7 +248,7 @@ greet
 
 ```bash
 # Clone the repository
-$ git clone https://github.com/yourusername/motils.git
+$ git clone https://github.com/pykeras/BashUtils
 $ cd motils
 
 # Build and install
