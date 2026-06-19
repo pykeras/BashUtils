@@ -2,7 +2,28 @@
 name = "motils"
 version = "0.1.0"
 edition = "2024"
+description = "A collection of CLI tools for daily usage."
+license = "MIT"
+repository = "https://github.com/pykeras/BashUtils/tree/motils/motils"
+readme = "README.md"
+keywords = ["cli", "terminal", "todo", "linux", "system"]
+categories = ["Command line utilities"]
+
+
 default-run = "greet"
+
+[[bin]]
+name = "greet"
+path = "src/bin/greet.rs"
+
+[[bin]]
+name = "todo"
+path = "src/bin/todo.rs"
+
+[[bin]]
+name = "idea"
+path = "src/bin/idea.rs"
+
 
 [dependencies]
 anyhow = "1.0.102"
